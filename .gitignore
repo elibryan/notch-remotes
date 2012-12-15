@@ -13,3 +13,4 @@
 logs
 /target
 foo
+.DS_Store

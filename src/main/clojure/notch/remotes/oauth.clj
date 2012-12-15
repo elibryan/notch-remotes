@@ -2,6 +2,7 @@
   "Clojure OAuth client modeled after clj-http"
   (:use clojure.set)
   (:use clojure.tools.logging)
+  (:use notch.remotes.util)
   (:require [clojure.data.json :as json])
   (:require [clj-http.client :as http])
   (:require [clojure.string :as str])
@@ -16,12 +17,8 @@
 ;;;Administrivia
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn- sort-map
-  "Sorts a map by keys"
-  [m]
-  (into (sorted-map) m))
 
-(defn create-oauth1-consumer
+(defn create-consumer
   "Remap to an OAuth consumer"
   [config]
   (-> (select-keys config [:base_uri
@@ -38,24 +35,6 @@
     (java.math.BigInteger. 256 secure_random)
     (.toString 32)))
 
-(defn- url-encode
-  "Turn keywords, numbers, etc into strings
-  Then URLEncode the string"[s]
-  (when s
-    (-> s
-      (#(if (keyword? %) (name %) (str %)))
-      (java.net.URLEncoder/encode)
-      )))
-
-(defn- query-params->map
-  "Turn a query param string into a map"
-  [param_string]
-  (if param_string
-    (->> (str/split param_string #"&")
-      (map #(str/split % #"="))
-      (map (fn [[k v]] [(keyword k) v]))
-      (into {}))
-    {}))
 
 (defn- assoc-url-param
   "Set a query param in a URL string"
