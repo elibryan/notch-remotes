@@ -62,6 +62,12 @@
 (fitbit/get-sleep-series-start-time consumer access_token "2012-01-01" "2012-01-31")
 (fitbit/get-sleep-series-time-in-bed consumer access_token "2012-01-01" "2012-01-31")
 (fitbit/get-sleep-series-minutes-asleep consumer access_token "2012-01-01" "2012-01-31")
+(bodymedia/get-user-last-sync consumer access_token)
+(bodymedia/get-weight-measurements consumer access_token)
+(bodymedia/get-burn-days consumer access_token "20121001" "20121101")
+(bodymedia/get-step-days consumer access_token "20121001" "20121101")
+(bodymedia/get-sleep-days consumer access_token "20121001" "20121101")
+
 
 ;(mapmyfitness/get-user consumer access_token )
 ;(bodymedia/get-user consumer access_token )
