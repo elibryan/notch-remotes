@@ -160,7 +160,7 @@
 
 (def ^:private request
   (-> http/request
-    (wrap-debug)
+;    (wrap-debug)
     (wrap-add-oauth-params)
 
     ))
