@@ -8,7 +8,7 @@
   (:use clojure.test)
   (:require [clojure.string :as str])
   (:use notch.remotes.util)
-  (:require [notch.remotes.oauth :as oauth] :reload)
+  (:require [notch.remotes.oauth :as oauth1] :reload)
   (:require [notch.remotes.oauth2 :as oauth2] :reload)
   (:require [notch.remotes.fitbit :as fitbit] :reload)
   (:require [notch.remotes.mapmyfitness :as mapmyfitness] :reload)
@@ -23,38 +23,46 @@
 
 
 
-(def mapmyfitness_consumer (oauth/create-oauth1-consumer (:mapmyfitness (load-config-file "remotes.config.clj"))))
-(def bodymedia_consumer (oauth/create-oauth1-consumer (:bodymedia (load-config-file "remotes.config.clj"))))
-(def fitbit_consumer (oauth/create-oauth1-consumer (:fitbit (load-config-file "remotes.config.clj"))))
-(def withings_consumer (oauth/create-oauth1-consumer (:withings (load-config-file "remotes.config.clj"))))
-(def consumer withings_consumer )
+(def consumer (oauth1/create-consumer (:mapmyfitness (load-config-file "remotes.config.clj"))))
+(def consumer (oauth1/create-consumer (:bodymedia (load-config-file "remotes.config.clj"))))
+(def consumer (oauth1/create-consumer (:fitbit (load-config-file "remotes.config.clj"))))
+(def consumer (oauth1/create-consumer (:withings (load-config-file "remotes.config.clj"))))
 
 
 
 
-;(try ;;Get a request token
-;  (def request_token
-;    (oauth/get-request-token consumer "http://localhost")
-;    )
-;  request_token
-;  (catch Exception e (error e)))
-;
-;
-;;;Go to the site
-;(clojure.java.browse/browse-url (oauth/get-authorization-uri consumer request_token "http://localhost"))
-;
-;
-;(try ;;Get an access token to the site
-;  (def access_token
+(try ;;Get a request token
+  (def request_token
+    (oauth/get-request-token consumer "http://localhost")
+    )
+  request_token
+  (catch Exception e (error e)))
+
+
+;;Go to the site
+(clojure.java.browse/browse-url (oauth/get-authorization-uri consumer request_token "http://localhost"))
+
+
+(try ;;Get an access token to the site
+  (def access_token
 ;    (oauth/get-access-token consumer request_token)
-;;    (oauth/get-access-token consumer request_token "85iomsvant6s8801dral156gos")
-;    )
-;  access_token
-;  (catch Exception e (error e)))
+    (oauth/get-access-token consumer request_token "j5qpp91m6cohot8ojk3learldi")
+    )
+  access_token
+  (catch Exception e (error e)))
 
 
 
-;(fitbit/get-user consumer access_token )
+(fitbit/get-user consumer access_token )
+(fitbit/get-steps-series consumer access_token "2012-01-01" "2012-01-31")
+(fitbit/get-calories-series consumer access_token "2012-01-01" "2012-01-31")
+(fitbit/get-weight-series consumer access_token "2012-01-01" "2012-01-31")
+(fitbit/get-calories-in-series consumer access_token "2012-01-01" "2012-01-31")
+(fitbit/get-water-in-series consumer access_token "2012-01-01" "2012-01-31")
+(fitbit/get-sleep-series-start-time consumer access_token "2012-01-01" "2012-01-31")
+(fitbit/get-sleep-series-time-in-bed consumer access_token "2012-01-01" "2012-01-31")
+(fitbit/get-sleep-series-minutes-asleep consumer access_token "2012-01-01" "2012-01-31")
+
 ;(mapmyfitness/get-user consumer access_token )
 ;(bodymedia/get-user consumer access_token )
 ;(withings/get-user consumer access_token )
@@ -84,7 +92,7 @@
 (try ;;Get an access token to the site
   (def access_token
     (oauth2/get-access-token consumer
-      "code"
+      ""
       "http://notch.me/")
 
     )
@@ -98,6 +106,10 @@
 (facebook/get-user consumer access_token)
 (runkeeper/get-user-profile consumer access_token)
 (runkeeper/get-user consumer access_token)
-
+(is (= (runkeeper/get-fitness-activities consumer access_token 0 3)
+       (vec (concat (runkeeper/get-fitness-activities consumer access_token 0 1)
+                    (runkeeper/get-fitness-activities consumer access_token 1 1)
+                    (runkeeper/get-fitness-activities consumer access_token 2 1)))))
+(runkeeper/get-fitness-activity consumer access_token (:uri (first (runkeeper/get-fitness-activities consumer access_token 0 1))))
 
 ;(run-tests 'notch.remotes.test-basics)

@@ -28,3 +28,19 @@
   (-> (http-get oauth_consumer access_token (:profile (get-user oauth_consumer access_token )))
     )
   )
+
+(defn get-fitness-activities
+  "Returns a list of fitness activities (runs)"
+  [oauth_consumer access_token & [page page_size]]
+  (let [uri (:fitness_activities (get-user oauth_consumer access_token ))]
+    (-> (http-get oauth_consumer access_token uri {:page (or page 0)
+                                               :pageSize (or page_size 20)})
+    :items)
+      ))
+
+
+
+(defn get-fitness-activity
+  "returns the details of a fitness activity"
+  [oauth_consumer access_token activity_uri]
+  (-> (http-get oauth_consumer access_token activity_uri)))

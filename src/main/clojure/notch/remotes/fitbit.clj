@@ -21,3 +21,43 @@
     :user
     )
   )
+
+(defn get-steps-series [oauth_consumer access_token start_date stop_date]
+  (-> (http-get oauth_consumer access_token (str "/1/user/-/activities/steps/date/" start_date "/" stop_date ".json"))
+    :activities-steps
+    ))
+
+(defn get-calories-series [oauth_consumer access_token start_date stop_date]
+  (-> (http-get oauth_consumer access_token (str "/1/user/-/activities/tracker/calories/date/" start_date "/" stop_date ".json"))
+    :activities-tracker-calories
+    ))
+
+(defn get-weight-series [oauth_consumer access_token start_date stop_date]
+  (-> (http-get oauth_consumer access_token (str "/1/user/-/body/weight/date/" start_date "/" stop_date ".json"))
+    :body-weight
+    ))
+
+(defn get-calories-in-series [oauth_consumer access_token start_date stop_date]
+  (-> (http-get oauth_consumer access_token (str "/1/user/-/foods/log/caloriesIn/date/" start_date "/" stop_date ".json"))
+    :foods-log-caloriesIn
+    ))
+
+(defn get-water-in-series [oauth_consumer access_token start_date stop_date]
+  (-> (http-get oauth_consumer access_token (str "/1/user/-/foods/log/water/date/" start_date "/" stop_date ".json"))
+    :foods-log-water
+    ))
+
+(defn get-sleep-series-start-time [oauth_consumer access_token start_date stop_date]
+  (-> (http-get oauth_consumer access_token (str "/1/user/-/sleep/startTime/date/" start_date "/" stop_date ".json"))
+    :sleep-startTime
+    ))
+
+(defn get-sleep-series-time-in-bed [oauth_consumer access_token start_date stop_date]
+  (-> (http-get oauth_consumer access_token (str "/1/user/-/sleep/timeInBed/date/" start_date "/" stop_date ".json"))
+    :sleep-timeInBed
+    ))
+
+(defn get-sleep-series-minutes-asleep [oauth_consumer access_token start_date stop_date]
+  (-> (http-get oauth_consumer access_token (str "/1/user/-/sleep/minutesAsleep/date/" start_date "/" stop_date ".json"))
+    :sleep-minutesAsleep
+    ))
