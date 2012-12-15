@@ -25,3 +25,38 @@
     :user
     )
   )
+
+
+(defn get-workouts
+  "Returns a list of workouts (runs)"
+  [oauth_consumer access_token & [page_number page_size]]
+    (->> (http-get oauth_consumer access_token "/workouts/get_workouts" {:start_record (* (or page_number 0) (or page_size 25))
+                                                          :limit (or page_size 25)})
+      :result
+      :output
+      :workouts))
+
+(defn get-workout-full
+  "Get details of single workout"
+  [oauth_consumer access_token workout_id]
+  (->> (http-get oauth_consumer access_token "/workouts/get_workout_full" {:workout_id workout_id})
+    :result
+    :output
+    :workout
+    ))
+
+(defn get-route
+  "Get a route"
+  [oauth_consumer access_token route_id]
+  (->> (http-get oauth_consumer access_token "/routes/get_route" {:route_id route_id})
+    :result
+    :output
+
+    ))
+
+(defn get-workout-time-series
+  "Get a workout time series"
+  [oauth_consumer access_token workout_id]
+  (->> (http-get oauth_consumer access_token "/workouts/get_time_series" {:workout_id workout_id})
+    :workout
+    ))

@@ -62,16 +62,23 @@
 (fitbit/get-sleep-series-start-time consumer access_token "2012-01-01" "2012-01-31")
 (fitbit/get-sleep-series-time-in-bed consumer access_token "2012-01-01" "2012-01-31")
 (fitbit/get-sleep-series-minutes-asleep consumer access_token "2012-01-01" "2012-01-31")
+(bodymedia/get-user consumer access_token )
 (bodymedia/get-user-last-sync consumer access_token)
 (bodymedia/get-weight-measurements consumer access_token)
 (bodymedia/get-burn-days consumer access_token "20121001" "20121101")
 (bodymedia/get-step-days consumer access_token "20121001" "20121101")
 (bodymedia/get-sleep-days consumer access_token "20121001" "20121101")
-
-
-;(mapmyfitness/get-user consumer access_token )
-;(bodymedia/get-user consumer access_token )
-;(withings/get-user consumer access_token )
+(mapmyfitness/get-user consumer access_token )
+(mapmyfitness/get-workouts consumer access_token )
+(count (mapmyfitness/get-workouts consumer access_token 0 3))
+(is (= (mapmyfitness/get-workouts consumer access_token 0 3)
+      (vec (concat (mapmyfitness/get-workouts consumer access_token 0 1)
+             (mapmyfitness/get-workouts consumer access_token 1 1)
+             (mapmyfitness/get-workouts consumer access_token 2 1)))))
+(mapmyfitness/get-workout-full consumer access_token (:workout_id (first (mapmyfitness/get-workouts consumer access_token ))))
+(mapmyfitness/get-route consumer access_token (:route_id (first (mapmyfitness/get-workouts consumer access_token ))))
+(mapmyfitness/get-workout-time-series consumer access_token (:workout_id (first (mapmyfitness/get-workouts consumer access_token ))))
+(withings/get-user consumer access_token )
 
 
 
