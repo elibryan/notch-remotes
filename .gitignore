@@ -1,0 +1,15 @@
+/pom.xml
+*jar
+/lib
+/classes
+/native
+/.lein-failures
+/checkouts
+/.lein-deps-sum
+.idea
+*.iml
+*.properties.clj
+*.config.clj
+logs
+/target
+foo

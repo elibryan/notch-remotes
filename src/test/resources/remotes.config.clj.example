@@ -1,0 +1,32 @@
+{
+  :mapmyfitness {:base_uri "https://api.mapmyfitness.com/3.1"
+                 :request_token_uri "https://api.mapmyfitness.com/3.1/oauth/request_token"
+                 :access_token_uri "https://api.mapmyfitness.com/3.1/oauth/access_token"
+                 :authorization_uri "https://api.mapmyfitness.com/3.1/oauth/authorize"
+                 :signature_method "HMAC-SHA1"
+                 :oauth_consumer_key "__YOUR_OAUTH_CONSUMER_KEY_HERE__"
+                 :oauth_consumer_secret "__YOUR_OAUTH_CONSUMER_SECRET_HERE__"}
+  :bodymedia {:base_uri "http://api.bodymedia.com/v2/json"
+                 :request_token_uri "https://api.bodymedia.com/oauth/request_token"
+                 :access_token_uri "https://api.bodymedia.com/oauth/access_token"
+                 :authorization_uri "https://api.bodymedia.com/oauth/authorize?api_key=__YOUR_OAUTH_CONSUMER_KEY_HERE__"
+                 :signature_method "HMAC-SHA1"
+                 :oauth_consumer_key "__YOUR_OAUTH_CONSUMER_KEY_HERE__"
+                 :oauth_consumer_secret "__YOUR_OAUTH_CONSUMER_SECRET_HERE__"}
+  :fitbit {:base_uri "https://api.fitbit.com"
+              :request_token_uri "https://api.fitbit.com/oauth/request_token"
+              :access_token_uri "https://api.fitbit.com/oauth/access_token"
+              :authorization_uri "https://api.fitbit.com/oauth/authorize"
+              :signature_method "HMAC-SHA1"
+              :oauth_consumer_key "__YOUR_OAUTH_CONSUMER_KEY_HERE__"
+              :oauth_consumer_secret "__YOUR_OAUTH_CONSUMER_SECRET_HERE__"}
+  :withings {:base_uri "http://wbsapi.withings.net"
+           :request_token_uri "https://oauth.withings.com/account/request_token"
+           :access_token_uri "https://oauth.withings.com/account/access_token"
+           :authorization_uri "https://oauth.withings.com/account/authorize"
+           :signature_method "HMAC-SHA1"
+           :oauth_consumer_key "__YOUR_OAUTH_CONSUMER_KEY_HERE__"
+           :oauth_consumer_secret "__YOUR_OAUTH_CONSUMER_SECRET_HERE__"}
+
+
+  }
