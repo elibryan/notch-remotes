@@ -5,6 +5,7 @@ Lightweight Clojure clients for self-tracking APIs.
 
 Provides wrapper clients for various APIs related to self-tracking, health & fitness devices, and quantified self
 
+Includes basic calls for [Fitbit](http://bitly.com/Jo6iEe), [RunKeeper](https://bitly.com/QkaPcJ), and [BodyMedia](https://bitly.com/UxeFN9)
 
 
  ## License

@@ -18,6 +18,11 @@
 
     ))
 
+(defn access-token-expired?
+  "Is the token expiration past the current time?"
+  [access_token]
+  (< (* 1000 (Long/parseLong (:xoauth_token_expiration_time access_token)))
+    (System/currentTimeMillis)))
 
 (defn get-user [oauth_consumer access_token]
   (http-get oauth_consumer access_token "/user/info"))
