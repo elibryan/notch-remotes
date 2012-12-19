@@ -47,3 +47,13 @@
       (map (fn [[k v]] [(keyword k) v]))
       (into {}))
     {}))
+
+(defn valid-oauth1-token [t]
+ (when (and (:oauth_token t) (:oauth_token_secret t))
+   t
+   ))
+
+(defn valid-oauth2-token [t]
+  (when (:access_token t)
+    t
+    ))

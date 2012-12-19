@@ -33,14 +33,14 @@
 
 (try ;;Get a request token
   (def request_token
-    (oauth/get-request-token consumer "http://localhost")
+    (oauth1/get-request-token consumer "http://localhost")
     )
   request_token
   (catch Exception e (error e)))
 
 
 ;;Go to the site
-(clojure.java.browse/browse-url (oauth/get-authorization-uri consumer request_token "http://localhost"))
+(clojure.java.browse/browse-url (oauth1/get-authorization-uri consumer request_token "http://localhost"))
 
 
 (try ;;Get an access token to the site
@@ -105,7 +105,7 @@
 (try ;;Get an access token to the site
   (def access_token
     (oauth2/get-access-token consumer
-      ""
+      "78155996af8047aab1c516bacaab6b97"
       "http://notch.me/")
 
     )

@@ -180,6 +180,7 @@
       (request)
       (:body)
       (query-params->map)
+      (valid-oauth1-token)
 
       )))
 
@@ -206,6 +207,7 @@
     (request)
     (:body)
     (query-params->map)
+    (valid-oauth1-token)
     ))
 
 

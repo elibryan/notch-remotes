@@ -66,7 +66,7 @@
                       :client_secret (:client_secret consumer)
                       :code code}
        response (http/post (:access_token_uri consumer) {:form-params form_params})
-;       _ (println response)
+;       _ (debug response)
     ]
-    (coerce-response-body response)
+    (valid-oauth2-token (coerce-response-body response))
 ))
