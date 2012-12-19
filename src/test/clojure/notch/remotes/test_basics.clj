@@ -95,7 +95,7 @@
     { :redirect_uri "http://notch.me/"
       :state "somestatehere"
 ;      :scope "https://www.googleapis.com/auth/latitude.all.best https://www.googleapis.com/auth/plus.me"
-;      :scope "publish_stream,user_location"
+      :scope "publish_stream,read_stream,export_stream"
       } )
   (clojure.java.browse/browse-url)
   )
@@ -105,18 +105,17 @@
 (try ;;Get an access token to the site
   (def access_token
     (oauth2/get-access-token consumer
-      "78155996af8047aab1c516bacaab6b97"
+      ""
       "http://notch.me/")
 
     )
   access_token
   (catch Exception e (error e)))
 
-
-
-
 (google/get-user consumer access_token)
 (facebook/get-user consumer access_token)
+(facebook/get-feed consumer access_token 0 400)
+(facebook/get-feed-by-time consumer access_token 1325404800  1356940800 1000)
 (runkeeper/get-user-profile consumer access_token)
 (runkeeper/get-user consumer access_token)
 (is (= (runkeeper/get-fitness-activities consumer access_token 0 3)
