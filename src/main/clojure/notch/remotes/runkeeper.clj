@@ -29,6 +29,11 @@
     )
   )
 
+(defn get-user-settings [oauth_consumer access_token]
+  (-> (http-get oauth_consumer access_token (:settings (get-user oauth_consumer access_token )))
+    )
+  )
+
 (defn get-fitness-activities
   "Returns a list of fitness activities (runs)"
   [oauth_consumer access_token & [page page_size]]

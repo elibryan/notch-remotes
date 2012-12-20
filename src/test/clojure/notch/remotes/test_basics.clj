@@ -118,6 +118,7 @@
 (facebook/get-feed-by-time consumer access_token 1325404800  1356940800 1000)
 (runkeeper/get-user-profile consumer access_token)
 (runkeeper/get-user consumer access_token)
+(runkeeper/get-user-settings consumer access_token)
 (is (= (runkeeper/get-fitness-activities consumer access_token 0 3)
        (vec (concat (runkeeper/get-fitness-activities consumer access_token 0 1)
                     (runkeeper/get-fitness-activities consumer access_token 1 1)
