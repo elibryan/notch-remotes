@@ -15,6 +15,7 @@
   (:require [notch.remotes.bodymedia :as bodymedia] :reload)
   (:require [notch.remotes.withings :as withings] :reload)
   (:require [notch.remotes.runkeeper :as runkeeper] :reload)
+  (:require [notch.remotes.nope :as nope] :reload)
   (:require [notch.remotes.facebook :as facebook] :reload)
   (:require [notch.remotes.google :as google] :reload)
   )
@@ -46,7 +47,7 @@
 (try ;;Get an access token to the site
   (def access_token
 ;    (oauth/get-access-token consumer request_token)
-    (oauth/get-access-token consumer request_token "j5qpp91m6cohot8ojk3learldi")
+    (oauth1/get-access-token consumer request_token "280hf2h7lhmaju2gj13gvdi5gt")
     )
   access_token
   (catch Exception e (error e)))
@@ -87,30 +88,35 @@
 (def consumer (oauth2/create-consumer (:google (load-config-file "remotes.config.clj"))))
 (def consumer (oauth2/create-consumer (:facebook (load-config-file "remotes.config.clj"))))
 (def consumer (oauth2/create-consumer (:runkeeper (load-config-file "remotes.config.clj"))))
-
-
+(def consumer (oauth2/create-consumer (:nope (load-config-file "remotes.config.clj"))))
 
 (->
   (oauth2/get-authorization-uri consumer
-    { :redirect_uri "http://notch.me/"
+    { :redirect_uri "https://notch.me/api/v0/remoteSources/nope/completeOauth"
+;      :redirect_uri "http://notch.me/"
       :state "somestatehere"
 ;      :scope "https://www.googleapis.com/auth/latitude.all.best https://www.googleapis.com/auth/plus.me"
-      :scope "publish_stream,read_stream,export_stream"
+      :scope "basic_read extended_read location_read friends_read mood_read mood_write move_read move_write sleep_read sleep_write meal_read meal_write weight_read weight_write cardiac_read generic_event_read generic_event_write"
       } )
   (clojure.java.browse/browse-url)
   )
 
-
-
 (try ;;Get an access token to the site
   (def access_token
     (oauth2/get-access-token consumer
-      ""
+      "access_token"
       "http://notch.me/")
 
     )
   access_token
   (catch Exception e (error e)))
+
+
+
+(nope/get-user consumer access_token)
+(nope/get-friends consumer access_token)
+(nope/get-mood consumer access_token)
+(nope/get-moves consumer access_token "20130301" "20130402")
 
 (google/get-user consumer access_token)
 (facebook/get-user consumer access_token)

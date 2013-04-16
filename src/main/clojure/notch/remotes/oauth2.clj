@@ -8,7 +8,6 @@
   (:require [clojure.string :as str])
   (:require [clojure.java.io :as io]))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;Helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -16,7 +15,8 @@
 (defn create-consumer
   "Remap to an OAuth consumer"
   [config]
-  (-> (select-keys config [:base_uri
+  (-> (select-keys config [:auth_type
+                           :base_uri
                            :access_token_uri
                            :authorization_uri
                            :client_id
@@ -65,8 +65,8 @@
                       :redirect_uri redirect_uri
                       :client_secret (:client_secret consumer)
                       :code code}
-       response (http/post (:access_token_uri consumer) {:form-params form_params})
-;       _ (debug response)
+       response (http/post (:access_token_uri consumer) {:form-params form_params
+                                                         :response-interceptor (fn [resp ctx] (.setHeader resp "Set-Cookie" ""))})
     ]
     (valid-oauth2-token (coerce-response-body response))
 ))

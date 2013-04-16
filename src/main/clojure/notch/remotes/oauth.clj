@@ -21,7 +21,8 @@
 (defn create-consumer
   "Remap to an OAuth consumer"
   [config]
-  (-> (select-keys config [:base_uri
+  (-> (select-keys config [:auth_type
+                           :base_uri
                           :request_token_uri
                           :access_token_uri
                           :authorization_uri
