@@ -27,6 +27,11 @@
     :activities-steps
     ))
 
+(defn get-steps-intraday [oauth_consumer access_token date]
+  (-> (http-get oauth_consumer access_token (str "/1/user/-/activities/steps/date/" date "/1d.json"))
+    :activities-steps-intraday :dataset
+    ))
+
 (defn get-calories-series [oauth_consumer access_token start_date stop_date]
   (-> (http-get oauth_consumer access_token (str "/1/user/-/activities/tracker/calories/date/" start_date "/" stop_date ".json"))
     :activities-tracker-calories
@@ -61,3 +66,16 @@
   (-> (http-get oauth_consumer access_token (str "/1/user/-/sleep/minutesAsleep/date/" start_date "/" stop_date ".json"))
     :sleep-minutesAsleep
     ))
+
+
+(defn get-steps
+  "get events from [start_date to stop_date)
+  start_date and stop_date are YYYY-MM-DD format"
+  [consumer access_token start_date stop_date & [{intra_day :intra_day}]]
+  (let [steps_series (get-steps-series consumer access_token start_date stop_date)]
+    (if intra_day
+      (pmap #(assoc % :intra (get-steps-intraday consumer access_token (:dateTime %))) steps_series)
+      steps_series
+      )
+  ))
+

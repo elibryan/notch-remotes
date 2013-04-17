@@ -31,7 +31,7 @@
 (defn- format-date [date]
   (.format date_format date))
 
-(defn parse-date [date_string]
+(defn- parse-date [date_string]
   (when (not (re-matches #"^\d\d\d\d\d\d\d\d$" date_string)) (throw (IllegalArgumentException. (str "Invalid date syntax: " date_string))))
   (.parse date_format date_string))
 

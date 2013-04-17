@@ -14,3 +14,4 @@ logs
 /target
 foo
 .DS_Store
+remote_sources_test_users.clj

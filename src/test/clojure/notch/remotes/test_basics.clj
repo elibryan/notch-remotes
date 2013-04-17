@@ -23,52 +23,67 @@
 
 
 
+^:private
+(defmulti create-consumer :auth_type)
+^:private
+(defmethod create-consumer :oauth1 [config] (oauth1/create-consumer config))
+^:private
+(defmethod create-consumer :oauth2 [config] (oauth2/create-consumer config))
+^:private
+(defn sanitize-service [service]
+  (keyword (str/lower-case (name service))))
 
-(def consumer (oauth1/create-consumer (:mapmyfitness (load-config-file "remotes.config.clj"))))
-(def consumer (oauth1/create-consumer (:bodymedia (load-config-file "remotes.config.clj"))))
-(def consumer (oauth1/create-consumer (:fitbit (load-config-file "remotes.config.clj"))))
-(def consumer (oauth1/create-consumer (:withings (load-config-file "remotes.config.clj"))))
 
+(defn load-consumers-from-config-file
+  "Reads a .clj file from the resources directory, loads up consumers based on the list"
+  [filename]
+  (->> (load-config-file "remotes.config.clj")
+    (map #(hash-map (sanitize-service (key %)) (create-consumer (val %))))
+    (reduce merge)
+    ))
 
+(def consumers (load-consumers-from-config-file "remotes.config.clj"))
 
-
+(def cur_consumer (consumers :bodymedia))
 (try ;;Get a request token
   (def request_token
-    (oauth1/get-request-token consumer "http://localhost")
+    (oauth1/get-request-token cur_consumer "http://localhost")
     )
   request_token
   (catch Exception e (error e)))
 
 
 ;;Go to the site
-(clojure.java.browse/browse-url (oauth1/get-authorization-uri consumer request_token "http://localhost"))
+(clojure.java.browse/browse-url (oauth1/get-authorization-uri cur_consumer request_token "http://localhost"))
 
 
 (try ;;Get an access token to the site
   (def access_token
 ;    (oauth/get-access-token consumer request_token)
-    (oauth1/get-access-token consumer request_token "280hf2h7lhmaju2gj13gvdi5gt")
+    (oauth1/get-access-token cur_consumer request_token "4dfb560a-1a92-4668-85c0-fe25c8771222")
     )
   access_token
   (catch Exception e (error e)))
 
 
+(fitbit/get-user (consumers :fitbit) access_token )
+(fitbit/get-steps-series (consumers :fitbit) access_token "2012-01-01" "2012-01-31")
+(fitbit/get-steps-intraday (consumers :fitbit) access_token "2012-01-01")
+(fitbit/get-calories-series (consumers :fitbit) access_token "2012-01-01" "2012-01-31")
+(fitbit/get-weight-series (consumers :fitbit) access_token "2012-01-01" "2012-01-31")
+(fitbit/get-calories-in-series (consumers :fitbit) access_token "2012-01-01" "2012-01-31")
+(fitbit/get-water-in-series (consumers :fitbit) access_token "2012-01-01" "2012-01-31")
+(fitbit/get-sleep-series-start-time (consumers :fitbit) access_token "2012-01-01" "2012-01-31")
+(fitbit/get-sleep-series-time-in-bed (consumers :fitbit) access_token "2012-01-01" "2012-01-31")
+(fitbit/get-sleep-series-minutes-asleep (consumers :fitbit) access_token "2012-01-01" "2012-01-31")
 
-(fitbit/get-user consumer access_token )
-(fitbit/get-steps-series consumer access_token "2012-01-01" "2012-01-31")
-(fitbit/get-calories-series consumer access_token "2012-01-01" "2012-01-31")
-(fitbit/get-weight-series consumer access_token "2012-01-01" "2012-01-31")
-(fitbit/get-calories-in-series consumer access_token "2012-01-01" "2012-01-31")
-(fitbit/get-water-in-series consumer access_token "2012-01-01" "2012-01-31")
-(fitbit/get-sleep-series-start-time consumer access_token "2012-01-01" "2012-01-31")
-(fitbit/get-sleep-series-time-in-bed consumer access_token "2012-01-01" "2012-01-31")
-(fitbit/get-sleep-series-minutes-asleep consumer access_token "2012-01-01" "2012-01-31")
-(bodymedia/get-user consumer access_token )
-(bodymedia/get-user-last-sync consumer access_token)
-(bodymedia/get-weight-measurements consumer access_token)
-(bodymedia/get-burn-days consumer access_token "20121001" "20121101")
-(bodymedia/get-step-days consumer access_token "20121001" "20121101")
-(bodymedia/get-sleep-days consumer access_token "20121001" "20121101")
+(bodymedia/get-user (consumers :bodymedia) access_token )
+(bodymedia/get-user-last-sync (consumers :bodymedia) access_token)
+(bodymedia/get-weight-measurements (consumers :bodymedia) access_token)
+(bodymedia/get-burn-days (consumers :bodymedia) access_token "20110701" "20110723")
+(bodymedia/get-step-days (consumers :bodymedia) access_token "20110701" "20110723")
+(bodymedia/get-step-hours (consumers :bodymedia) access_token "20110701" "20110723")
+(bodymedia/get-sleep-days (consumers :bodymedia) access_token "20121001" "20121101")
 (mapmyfitness/get-user consumer access_token )
 (mapmyfitness/get-workouts consumer access_token )
 (count (mapmyfitness/get-workouts consumer access_token 0 3))
