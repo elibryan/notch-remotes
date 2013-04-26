@@ -1,7 +1,7 @@
 (defproject notch/remotes "0.0.1-SNAPSHOT"
   :description "Notch Remotes - API wrappers for self-tracking services"
   :dependencies [[org.clojure/clojure "1.4.0"]
-;                 [commons-logging/commons-logging "1.1"]
+                 [joda-time/joda-time "2.2"]
                  [org.clojure/tools.logging "0.2.3"]
                  [org.clojure/data.json "0.2.0"]
                  [clj-http "0.6.1"]

@@ -57,3 +57,36 @@
   (when (:access_token t)
     t
     ))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Some date/time helpers
+;;;;;;;;;;;;;;;;;
+
+(defn get-datetime-formatter-3339* [& [tz_id]]
+  (if (= tz_id "-00:00")
+    (doto (org.joda.time.format.DateTimeFormat/forPattern "yyyy-MM-dd'T'HH:mm:ss.SSS-00:00")
+      (.withZone (org.joda.time.DateTimeZone/forID "-00:00")))
+    (doto (org.joda.time.format.DateTimeFormat/forPattern "yyyy-MM-dd'T'HH:mm:ss.SSSZZ")
+      (.withZone (org.joda.time.DateTimeZone/forID tz_id)))
+
+    )
+  )
+
+(def get-datetime-formatter-3339 (memoize get-datetime-formatter-3339* ))
+
+(defn get-datetime-period [p_string]
+  (org.joda.time.Period/parse p_string))
+
+(defn parse-datetime [dt_string]
+  (org.joda.time.DateTime/parse dt_string))
+
+(defn parse-datetime-from-long [dt_long]
+  (org.joda.time.DateTime. dt_long))
+
+(defn datetime-with-tz [dt tz_id]
+  (.withZone dt (org.joda.time.DateTimeZone/forID tz_id)))
+
+(defn datetime-with-tz-retain-fields [dt tz_id]
+  (.withZoneRetainFields dt (org.joda.time.DateTimeZone/forID tz_id)))
+

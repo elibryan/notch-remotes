@@ -4,6 +4,7 @@
   (:require [clojure.string :as str])
   (:require [notch.remotes.oauth2 :as oauth] :reload)
   (:require [clj-http.client :as http])
+  (:use [notch.remotes.util])
   )
 
 (defn http-get
@@ -28,12 +29,16 @@
 ^:private
 (def date_format (doto (java.text.SimpleDateFormat. "yyyyMMdd")
                    (.setTimeZone (java.util.TimeZone/getTimeZone "GMT-0:00" ))))
-(defn- format-date [date]
+
+  (defn- format-date [date]
   (.format date_format date))
 
 (defn- parse-date [date_string]
   (when (not (re-matches #"^\d\d\d\d\d\d\d\d$" date_string)) (throw (IllegalArgumentException. (str "Invalid date syntax: " date_string))))
   (.parse date_format date_string))
+
+
+
 
 ^:private
 (def milliseconds_per_day (* 24 60 60 1000))
@@ -109,13 +114,6 @@
   (->> (http-get oauth_consumer access_token (str "/nudge/api/sleeps/" xid "/snapshot"))
     :data))
 
-(defn get-sleeps
-  "get events from [start_date to stop_date)
-  start_date and stop_date can be java.util.Date or RFC3339 strings"
-  [oauth_consumer access_token start_date stop_date & [options]]
-  (get-stuff oauth_consumer access_token start_date stop_date get-sleeps-day get-sleep-intensity options))
-
-
 (defn get-body-events-day
   "get body events on date_string"
   [oauth_consumer access_token date_string & [options]]
@@ -127,3 +125,95 @@
   start_date and stop_date can be java.util.Date or RFC3339 strings"
   [oauth_consumer access_token start_date stop_date & [options]]
   (get-stuff oauth_consumer access_token start_date stop_date get-body-events-day nil options))
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Trying something new with Sleep
+;;;;;;;;;;;;;;;;;
+
+
+(defn- parse-nope-datetime [date_string &[time_string]]
+  (if time_string
+    (datetime-with-tz-retain-fields (parse-datetime (str date_string "T" time_string )) "-00:00")
+    (datetime-with-tz-retain-fields (parse-datetime (str date_string )) "-00:00")
+    )
+  )
+
+(defn- parse-nope-datetime-seconds [seconds_long tz_string]
+(-> (parse-datetime-from-long (* 1000 seconds_long))
+  (datetime-with-tz  tz_string)))
+
+(def ^:private request_date_formatter (org.joda.time.format.DateTimeFormat/forPattern "yyyyMMdd"))
+
+(defn format-request-date
+  "dt_string is an RFC3339 string
+  this converts it into 'yyyyMMdd' for service calls"
+  [dt_string]
+  (.print request_date_formatter (parse-datetime (str dt_string ))))
+
+(defn- format-nope-datetime [dt tz_string]
+  (.print (get-datetime-formatter-3339 tz_string) dt)
+  )
+
+
+(defn- get-sleep-start-time [{{tz_string :tz
+                              asleep_time :asleep_time} :details
+                             date :date :as resp}]
+  (format-nope-datetime  (parse-nope-datetime-seconds asleep_time tz_string) tz_string))
+
+(defn- get-sleep-end-time [{{tz_string :tz
+                             awake_time :awake_time} :details
+                            date :date :as resp}]
+  (format-nope-datetime  (parse-nope-datetime-seconds awake_time tz_string) tz_string))
+
+
+(defn- get-sleep-duration [resp]
+  (+ (get-in resp [:details :light])
+    (get-in resp [:details :deep])
+    ))
+
+(defn- get-light-sleep-duration [resp]
+  (get-in resp [:details :light]))
+
+(defn- get-deep-sleep-duration [resp]
+  (get-in resp [:details :deep]))
+
+(defn- get-awake-sleep-duration [resp]
+  (get-in resp [:details :awake]))
+
+(defn- get-intraday-series [{{tz_string :tz} :details
+                             intra :intra
+                             :as resp} type]
+  (when (< 1 (count intra))
+    (let [intra (sort-map (map #(hash-map (first %) (second %)) intra))
+          timestamps (vec (map key intra))
+          min_time (format-nope-datetime  (parse-nope-datetime-seconds (first timestamps) tz_string) tz_string)
+          max_time (format-nope-datetime  (parse-nope-datetime-seconds (last timestamps) tz_string) tz_string)
+          period (- (second timestamps) (first timestamps))
+          series (map #(int (val %)) intra)
+          series (map #(float (/ (- % 1) 3)) series)]
+      {:start_time min_time :stop_time max_time :period_s period :type type :series series}
+      )))
+
+(defn sleepdayresp->sleepevents [resp]
+  [(-> resp
+     (assoc :start_time (get-sleep-start-time resp))
+     (assoc :end_time (get-sleep-end-time resp))
+     (assoc :sleep_s (get-sleep-duration resp))
+     (assoc :intra (get-intraday-series resp :sleep))
+     (assoc :type :sleep)
+     (select-keys [:start_time :end_time :type :sleep_s :intra ]))
+   ])
+
+
+(defn get-sleeps
+  "get events from [start_date to stop_date)
+  start_date and stop_date are RFC3339 strings"
+  [oauth_consumer access_token start_date stop_date & [options]]
+  (->> (get-stuff oauth_consumer access_token (format-request-date start_date) (format-request-date stop_date) get-sleeps-day get-sleep-intensity options)
+    (map sleepdayresp->sleepevents )
+;    (filter #(and % (< 0 (:sleep_s %))))
+;  identity
+    ))

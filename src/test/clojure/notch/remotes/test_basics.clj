@@ -21,30 +21,30 @@
   )
 
 
+(do
+
+  ^:private
+  (defmulti create-consumer :auth_type)
+  ^:private
+  (defmethod create-consumer :oauth1 [config] (oauth1/create-consumer config))
+  ^:private
+  (defmethod create-consumer :oauth2 [config] (oauth2/create-consumer config))
+  ^:private
+  (defn sanitize-service [service]
+    (keyword (str/lower-case (name service))))
 
 
-^:private
-(defmulti create-consumer :auth_type)
-^:private
-(defmethod create-consumer :oauth1 [config] (oauth1/create-consumer config))
-^:private
-(defmethod create-consumer :oauth2 [config] (oauth2/create-consumer config))
-^:private
-(defn sanitize-service [service]
-  (keyword (str/lower-case (name service))))
-
-
-(defn load-consumers-from-config-file
-  "Reads a .clj file from the resources directory, loads up consumers based on the list"
-  [filename]
-  (->> (load-config-file "remotes.config.clj")
-    (map #(hash-map (sanitize-service (key %)) (create-consumer (val %))))
-    (reduce merge)
-    ))
+  (defn load-consumers-from-config-file
+    "Reads a .clj file from the resources directory, loads up consumers based on the list"
+    [filename]
+    (->> (load-config-file "remotes.config.clj")
+      (map #(hash-map (sanitize-service (key %)) (create-consumer (val %))))
+      (reduce merge)
+      ))
 
 (def consumers (load-consumers-from-config-file "remotes.config.clj"))
 
-(def cur_consumer (consumers :bodymedia))
+(def cur_consumer (consumers :fitbit))
 (try ;;Get a request token
   (def request_token
     (oauth1/get-request-token cur_consumer "http://localhost")
@@ -60,7 +60,7 @@
 (try ;;Get an access token to the site
   (def access_token
 ;    (oauth/get-access-token consumer request_token)
-    (oauth1/get-access-token cur_consumer request_token "4dfb560a-1a92-4668-85c0-fe25c8771222")
+    (oauth1/get-access-token cur_consumer request_token "verifier")
     )
   access_token
   (catch Exception e (error e)))
@@ -76,6 +76,7 @@
 (fitbit/get-sleep-series-start-time (consumers :fitbit) access_token "2012-01-01" "2012-01-31")
 (fitbit/get-sleep-series-time-in-bed (consumers :fitbit) access_token "2012-01-01" "2012-01-31")
 (fitbit/get-sleep-series-minutes-asleep (consumers :fitbit) access_token "2012-01-01" "2012-01-31")
+(fitbit/get-sleeps (consumers :fitbit) access_token "2012-01-01" "2012-01-31")
 
 (bodymedia/get-user (consumers :bodymedia) access_token )
 (bodymedia/get-user-last-sync (consumers :bodymedia) access_token)
@@ -100,14 +101,10 @@
 
 
 
-(def consumer (oauth2/create-consumer (:google (load-config-file "remotes.config.clj"))))
-(def consumer (oauth2/create-consumer (:facebook (load-config-file "remotes.config.clj"))))
-(def consumer (oauth2/create-consumer (:runkeeper (load-config-file "remotes.config.clj"))))
-(def consumer (oauth2/create-consumer (:nope (load-config-file "remotes.config.clj"))))
-
+(def cur_consumer (consumers :nope))
 (->
-  (oauth2/get-authorization-uri consumer
-    { :redirect_uri "https://notch.me/api/v0/remoteSources/nope/completeOauth"
+  (oauth2/get-authorization-uri cur_consumer
+    { :redirect_uri "https://notch.dev:0/api/v0/remoteSources/nope/completeOauth"
 ;      :redirect_uri "http://notch.me/"
       :state "somestatehere"
 ;      :scope "https://www.googleapis.com/auth/latitude.all.best https://www.googleapis.com/auth/plus.me"
@@ -118,7 +115,7 @@
 
 (try ;;Get an access token to the site
   (def access_token
-    (oauth2/get-access-token consumer
+    (oauth2/get-access-token cur_consumer
       "access_token"
       "http://notch.me/")
 
@@ -132,6 +129,8 @@
 (nope/get-friends consumer access_token)
 (nope/get-mood consumer access_token)
 (nope/get-moves consumer access_token "20130301" "20130402")
+(nope/get-sleeps (consumers :nope) access_token "2013-03-01" "2013-04-02" )
+(nope/get-sleeps (consumers :nope) access_token "2013-03-01" "2013-04-02" {:intra_day true})
 
 (google/get-user consumer access_token)
 (facebook/get-user consumer access_token)
