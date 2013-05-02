@@ -1,4 +1,4 @@
-(ns notch.remotes.nope
+(ns notch.remotes.jawbone
   (:use clojure.tools.logging)
   (:require [clojure.data.json :as json])
   (:require [clojure.string :as str])
@@ -93,7 +93,7 @@
   [oauth_consumer access_token {:keys [start_time end_time intra_day]}]
   (let [ resp_items (-> (request oauth_consumer access_token (get-moves-request {:start_time start_time :end_time end_time })) :data :items)
          intra_items (when intra_day (->> (map :xid resp_items)
-                                          (map #(request oauth_consumer access_token (get-move-intensity-request {:xid %}) ) )))
+                                          (pmap #(request oauth_consumer access_token (get-move-intensity-request {:xid %}) ) )))
           resp_items (if (not-empty intra_items) (map #(assoc %1 :intra (:data %2)) resp_items intra_items) resp_items)
          output (->>
                     (map resp-item->step-event resp_items)
