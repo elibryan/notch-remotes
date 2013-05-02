@@ -65,9 +65,9 @@
 
 (defn get-datetime-formatter-3339* [& [tz_id]]
   (if (= tz_id "-00:00")
-    (doto (org.joda.time.format.DateTimeFormat/forPattern "yyyy-MM-dd'T'HH:mm:ss.SSS-00:00")
+    (-> (org.joda.time.format.DateTimeFormat/forPattern "yyyy-MM-dd'T'HH:mm:ss.SSS-00:00")
       (.withZone (org.joda.time.DateTimeZone/forID "-00:00")))
-    (doto (org.joda.time.format.DateTimeFormat/forPattern "yyyy-MM-dd'T'HH:mm:ss.SSSZZ")
+    (-> (org.joda.time.format.DateTimeFormat/forPattern "yyyy-MM-dd'T'HH:mm:ss.SSSZZ")
       (.withZone (org.joda.time.DateTimeZone/forID tz_id)))
 
     )
@@ -90,3 +90,13 @@
 (defn datetime-with-tz-retain-fields [dt tz_id]
   (.withZoneRetainFields dt (org.joda.time.DateTimeZone/forID tz_id)))
 
+(defn datetime->3339-string [dt tz_string]
+  (.print (get-datetime-formatter-3339 tz_string) dt))
+
+
+(defn seconds->datetime [seconds tz_string]
+  (-> (parse-datetime-from-long (* 1000 seconds))
+    (datetime-with-tz  tz_string)))
+
+(defn datetime->seconds [dt]
+  (long (* 0.001 (.getMillis dt))))
