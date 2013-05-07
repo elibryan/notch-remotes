@@ -27,6 +27,14 @@
     )
   )
 
+
+(defn get-user-request
+  ""
+  []
+  (-> {:method :get
+       :path "/nudge/api/users/@me"
+       }))
+
 (defn get-moves-request
   ""
   [{:keys [start_time end_time] :as req}]
@@ -34,6 +42,15 @@
        :path "/nudge/api/users/@me/moves"
        :query-params { :start_time (datetime->seconds (parse-datetime start_time))
                      :end_time (datetime->seconds (parse-datetime end_time))}}))
+
+
+(defn get-move-day-request
+  ""
+  [{:keys [date] :as req}]
+  (-> {:method :get
+       :path "/nudge/api/users/@me/moves"
+       :query-params { :date (Long/parseLong date)} }))
+
 
 (defn get-move-intensity-request
   ""
@@ -51,6 +68,19 @@
                             {tz :tz} :details}]
   (-> (seconds->datetime time_completed tz)
     (datetime->3339-string tz)))
+
+(def ^:private format_yyyymmdd
+  (org.joda.time.format.DateTimeFormat/forPattern "yyyyMMdd"))
+
+(defn- time-range-yyyymmdd [start_time end_time]
+  (for [s (range (datetime->seconds (parse-datetime start_time)) (datetime->seconds (parse-datetime end_time)) (* 24 60 60))]
+    (->> (seconds->datetime s "-00:00")
+      (.print format_yyyymmdd)
+    )
+    )
+  )
+
+;(time-range-yyyymmdd "2013-05-01" "2013-05-09")
 
 (defn- resp-item->intraday-series [{{tz :tz} :details
                                      intra :intra
@@ -89,9 +119,30 @@
      (#(when (every? % [:start_time :end_time :type :calories]) %)))
    ])
 
+;(defn get-moves
+;  [oauth_consumer access_token {:keys [start_time end_time intra_day]}]
+;  (let [ resp_items (-> (request oauth_consumer access_token (get-moves-request {:start_time start_time :end_time end_time })) :data :items)
+;         intra_items (when intra_day (->> (map :xid resp_items)
+;                                       (pmap #(request oauth_consumer access_token (get-move-intensity-request {:xid %}) ) )))
+;         resp_items (if (not-empty intra_items) (map #(assoc %1 :intra (:data %2)) resp_items intra_items) resp_items)
+;         output (->>
+;      (map resp-item->step-event resp_items)
+;      (concat (map resp-item->burn-event resp_items))
+;      (flatten)
+;      (filter identity))]
+;    output
+;    ))
+
+
 (defn get-moves
   [oauth_consumer access_token {:keys [start_time end_time intra_day]}]
-  (let [ resp_items (-> (request oauth_consumer access_token (get-moves-request {:start_time start_time :end_time end_time })) :data :items)
+  (let [
+         resp_items (->> (time-range-yyyymmdd start_time end_time)
+                          (map #(get-move-day-request {:date %}))
+                          (pmap #(request oauth_consumer access_token %))
+                          (map :data) (map :items)
+                          (flatten))
+;          _ (debug resp_items)
          intra_items (when intra_day (->> (map :xid resp_items)
                                           (pmap #(request oauth_consumer access_token (get-move-intensity-request {:xid %}) ) )))
           resp_items (if (not-empty intra_items) (map #(assoc %1 :intra (:data %2)) resp_items intra_items) resp_items)
@@ -99,6 +150,7 @@
                     (map resp-item->step-event resp_items)
                     (concat (map resp-item->burn-event resp_items))
                     (flatten)
-                    (filter identity))]
+                    (filter identity))
+         ]
   output
   ))
