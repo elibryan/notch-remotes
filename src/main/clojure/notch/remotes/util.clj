@@ -74,6 +74,24 @@
   )
 
 (def get-datetime-formatter-3339 (memoize get-datetime-formatter-3339* ))
+(def ^:private problem_tz_ids
+  {"pdt" "America/Los_Angeles"
+   "PDT" "America/Los_Angeles"}
+)
+(defn timezone-for-id [tz_id]
+  (try
+    (let [tz_id (get-in problem_tz_ids [tz_id] tz_id)]
+      (org.joda.time.DateTimeZone/forID tz_id)
+      )
+    (catch java.lang.IllegalArgumentException ex
+      (org.joda.time.DateTimeZone/forTimeZone (java.util.TimeZone/getTimeZone tz_id)))))
+
+
+;(timezone-for-id "PDT")
+;(timezone-for-id "GMT+0100")
+;(timezone-for-id "GMT-0400")
+;(timezone-for-id "GMT+0000")
+;
 
 (defn get-datetime-period [p_string]
   (org.joda.time.Period/parse p_string))
